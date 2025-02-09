@@ -1,0 +1,7 @@
+postgres/data
+ipfs/data
+nginx/data
+graph_node/data
+pgadmin/data
+
+.env

@@ -92,13 +92,14 @@ services:
     image: wordpress:latest
     container_name: wordpress
     volumes:
-      - ./wordpress:/var/www/html/
+      - ./wordpress:/var/www/html
     environment:
       WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
       WORDPRESS_TABLE_PREFIX: ${WORDPRESS_TABLE_PREFIX}
       WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
       WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
       WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+      WORDPRESS_DEBUG: ${WORDPRESS_DEBUG}
     depends_on:
       - mysql
       - phpmyadmin

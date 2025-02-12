@@ -1,9 +1,23 @@
 version: '3'
 services:
+  mysql:
+    image: mariadb:latest
+    container_name: mysql
+    volumes:
+      - ./mysql:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    restart: always
+    networks:
+      - mns
   graph_node:
+    container_name: mns-subgraph
     image: 'graphprotocol/graph-node:latest'
     networks:
-      - local
+      - mns
     ports:
       - '9000'
       - '9001'
@@ -27,18 +41,20 @@ services:
       GRAPH_ALLOW_NON_DETERMINISTIC_FULLTEXT_SEARCH: ${GRAPH_ALLOW_NON_DETERMINISTIC_FULLTEXT_SEARCH}
       GRAPH_POI_ACCESS_TOKEN: ${GRAPH_POI_ACCESS_TOKEN}
   ipfs:
+    container_name: ipfs
     image: ipfs/go-ipfs
     networks:
-      - local
+      - mns
     ports:
       - '5001'
     volumes:
       - './ipfs/data:/data/ipfs'
   postgres:
+    container_name: postgres
     image: postgres
     restart: always
     networks:
-      - local
+      - mns
     ports:
       - 5432
     volumes:
@@ -49,26 +65,98 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_INITDB_ARGS: "-E UTF8 --locale=C"
+  
   pgadmin:
     image: dpage/pgadmin4
     ports:
         - 16543:80
     networks:
-      - local
+      - mns 
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+  metadata:
+    container_name: metadata
+    build: https://github.com/monad-ns/mns-metadata-service.git
+    ports:
+      - '8080:8080'
+    networks:
+      - mns
+    restart: always
+    environment:
+      NODE_PROVIDER_URL: ${NODE_PROVIDER_URL}
+      GRAPH_API_URL: ${GRAPH_API_URL}
+      ADDRESS_ETH_REGISTRY: ${ADDRESS_ETH_REGISTRY}
+      ADDRESS_ETH_REGISTRAR: ${ADDRESS_ETH_REGISTRAR}
+  wordpress:
+    image: wordpress:latest
+    container_name: wordpress
+    volumes:
+      - ./wp-content:/var/www/html/wp-content
+    environment:
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
+      WORDPRESS_TABLE_PREFIX: ${WORDPRESS_TABLE_PREFIX}
+      WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+    depends_on:
+      - mysql
+      - phpmyadmin
+    restart: always
+    ports:
+      - 8081:80
+    networks:
+      - mns
+  phpmyadmin:
+    container_name: phpmyadmin
+    image: phpmyadmin/phpmyadmin:latest
+    depends_on:
+      - mysql
+    restart: always
+    ports:
+      - 8180:80
+    environment:
+      PMA_HOST: ${PMA_HOST}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    networks:
+      - mns
+  app:
+    container_name: mns-app
+    ports:
+      - '3000:80'
+    networks:
+      - mns
+    restart: always
+    build: 
+      context: https://github.com/monad-ns/mns-app.git
+      args:
+        REACT_APP_PROJECT_ID: ${REACT_APP_PROJECT_ID}
+        REACT_APP_ALCHEMY_KEY: ${REACT_APP_ALCHEMY_KEY}
+        REACT_APP_GRAPHAPI_URL: ${REACT_APP_GRAPHAPI_URL}
+        REACT_APP_SUPPORTED_CHAIN_ID: ${REACT_APP_SUPPORTED_CHAIN_ID}
+        REACT_APP_MONREGISTERCONTROLLER: ${REACT_APP_MONREGISTERCONTROLLER}
+        REACT_APP_NODE_ENV: ${REACT_APP_NODE_ENV}
+        REACT_APP_NATIVE_TOKEN: ${REACT_APP_NATIVE_TOKEN}
+        REACT_APP_PUBLICRESOLVER: ${REACT_APP_PUBLICRESOLVER}
+        REACT_APP_MINCOMMITMENTAGE: ${REACT_APP_MINCOMMITMENTAGE}
+        REACT_APP_MAXCOMMITMENTAGE: ${REACT_APP_MAXCOMMITMENTAGE}
+        REACT_APP_GRACE_PREIOD: ${REACT_APP_GRACE_PREIOD}
+        REACT_APP_PREMIUM_PERIOD: ${REACT_APP_PREMIUM_PERIOD}
+        REACT_APP_TWITTER_URL: ${REACT_APP_TWITTER_URL}
+        REACT_APP_GITHUB_URL: ${REACT_APP_GITHUB_URL}
+        REACT_APP_DISCORD_URL: ${REACT_APP_DISCORD_URL}
+        REACT_APP_CONTRACT_URL: ${REACT_APP_CONTRACT_URL}
+        REACT_APP_METADATA_URL: ${REACT_APP_METADATA_URL}
   nginx:
+    container_name: nginx
     image: 'nginx:latest'
     restart: always
-    depends_on:
-      - graph_node
-    networks:
-      - local
     ports:
       - '80:80'
       - '443:80'
     volumes:
       - './nginx/conf.d:/etc/nginx/conf.d'
+    extra_hosts:
+      - "localhost:host-gateway"
 networks:
-  local: null
+  mns: null

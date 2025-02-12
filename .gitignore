@@ -3,5 +3,7 @@ ipfs/data
 nginx/data
 graph_node/data
 pgadmin/data
+mysql
+wp-content
 
 .env

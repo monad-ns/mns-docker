@@ -4,7 +4,7 @@ services:
     image: mariadb:latest
     container_name: mysql
     volumes:
-      - ./mysql:/var/lib/mysql
+      - ./mysql/data:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_USER: ${MYSQL_USER}
@@ -92,7 +92,7 @@ services:
     image: wordpress:latest
     container_name: wordpress
     volumes:
-      - ./wp-content:/var/www/html/wp-content
+      - ./wordpress:/var/www/html/
     environment:
       WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
       WORDPRESS_TABLE_PREFIX: ${WORDPRESS_TABLE_PREFIX}

@@ -156,7 +156,9 @@ services:
       - '443:80'
     volumes:
       - './nginx/conf.d:/etc/nginx/conf.d'
-    extra_hosts:
-      - "localhost:host-gateway"
+    extra_hosts: 
+      - "localhost:host-gateway" 
+      - "127.0.0.1:host-gateway" 
+      - '172.21.0.1:host-gateway'
 networks:
   mns: null

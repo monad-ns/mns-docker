@@ -151,6 +151,8 @@ services:
     container_name: nginx
     image: 'nginx:latest'
     restart: always
+    networks:
+      - mns
     ports:
       - '80:80'
       - '443:80'

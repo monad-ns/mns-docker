@@ -1,46 +1,5 @@
 version: '3'
 services:
-  mysql:
-    image: mariadb:latest
-    container_name: mysql
-    volumes:
-      - ./mysql/data:/var/lib/mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-    restart: always
-    networks:
-      - mns
-  graph_node:
-    container_name: mns-subgraph
-    image: 'graphprotocol/graph-node:latest'
-    networks:
-      - mns
-    ports:
-      - '9000'
-      - '9001'
-      - '9020'
-      - '9030'
-      - '9040'
-    depends_on:
-      - ipfs
-      - postgres
-      - nginx
-    extra_hosts:
-      - '172.21.0.1:host-gateway'
-    environment:
-      postgres_pass: ${POSTGRES_PASSWORD}
-      postgres_user: ${POSTGRES_USER}
-      postgres_host: ${POSTGRES_HOST}
-      postgres_db: ${POSTGRES_DB}
-      ethereum: ${ETHEREUM}
-      ipfs: ${IPFS}
-      GRAPH_LOG: ${GRAPH_LOG}
-      GRAPH_ALLOW_NON_DETERMINISTIC_IPFS: ${GRAPH_ALLOW_NON_DETERMINISTIC_IPFS}
-      GRAPH_ALLOW_NON_DETERMINISTIC_FULLTEXT_SEARCH: ${GRAPH_ALLOW_NON_DETERMINISTIC_FULLTEXT_SEARCH}
-      GRAPH_POI_ACCESS_TOKEN: ${GRAPH_POI_ACCESS_TOKEN}
   ipfs:
     container_name: ipfs
     image: ipfs/go-ipfs
@@ -68,8 +27,49 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_INITDB_ARGS: "-E UTF8 --locale=C"
-  
+  mysql:
+    image: mariadb:latest
+    container_name: mysql
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    restart: always
+    networks:
+      - mns
+  graph_node:
+    container_name: graph_node
+    image: 'graphprotocol/graph-node:latest'
+    networks:
+      - mns
+    ports:
+      - '9000'
+      - '9001'
+      - '9020'
+      - '9030'
+      - '9040'
+    depends_on:
+      - ipfs
+      - postgres
+      - nginx
+    extra_hosts:
+      - '172.21.0.1:host-gateway'
+    environment:
+      postgres_pass: ${POSTGRES_PASSWORD}
+      postgres_user: ${POSTGRES_USER}
+      postgres_host: ${POSTGRES_HOST}
+      postgres_db: ${POSTGRES_DB}
+      ethereum: ${ETHEREUM}
+      ipfs: ${IPFS}
+      GRAPH_LOG: ${GRAPH_LOG}
+      GRAPH_ALLOW_NON_DETERMINISTIC_IPFS: ${GRAPH_ALLOW_NON_DETERMINISTIC_IPFS}
+      GRAPH_ALLOW_NON_DETERMINISTIC_FULLTEXT_SEARCH: ${GRAPH_ALLOW_NON_DETERMINISTIC_FULLTEXT_SEARCH}
+      GRAPH_POI_ACCESS_TOKEN: ${GRAPH_POI_ACCESS_TOKEN}
   pgadmin:
+    container_name: pgadmin
     image: dpage/pgadmin4
     ports:
         - 16543:80
@@ -132,7 +132,7 @@ services:
     networks:
       - mns
   app:
-    container_name: mns-app
+    container_name: app
     ports:
       - '3000:80'
     networks:

@@ -4,7 +4,7 @@ services:
     container_name: ipfs
     image: ipfs/go-ipfs
     networks:
-      - local
+      - mns
     ports:
       - '5001'
     volumes:
@@ -14,7 +14,7 @@ services:
     image: postgres
     restart: always
     networks:
-      - local
+      - mns
     ports:
       - 5432
     volumes:
@@ -37,12 +37,12 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
     restart: always
     networks:
-      - local
+      - mns
   graph_node:
     container_name: graph_node
     image: 'graphprotocol/graph-node:latest'
     networks:
-      - local
+      - mns
     ports:
       - '9000'
       - '9001'
@@ -71,17 +71,17 @@ services:
     ports:
         - 16543:80
     networks:
-      - local 
+      - mns 
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
   metadata:
     container_name: metadata
-    build: https://github.com/monad-ns/local-metadata-service.git
+    build: https://github.com/monad-ns/mns-metadata-service.git
     ports:
       - '8080:8080'
     networks:
-      - local
+      - mns
     restart: always
     environment:
       NODE_PROVIDER_URL: ${NODE_PROVIDER_URL}
@@ -108,7 +108,7 @@ services:
     ports:
       - 8081:80
     networks:
-      - local
+      - mns
   phpmyadmin:
     container_name: phpmyadmin
     image: phpmyadmin/phpmyadmin:latest
@@ -121,16 +121,16 @@ services:
       PMA_HOST: ${PMA_HOST}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     networks:
-      - local
+      - mns
   app:
     container_name: app
     ports:
       - '3000:80'
     networks:
-      - local
+      - mns
     restart: always
     build: 
-      context: https://github.com/monad-ns/local-app.git
+      context: https://github.com/monad-ns/mns-app.git
       args:
         VITE_APP_PROJECT_ID: ${VITE_APP_PROJECT_ID}
         VITE_APP_ALCHEMY_KEY: ${VITE_APP_ALCHEMY_KEY}
@@ -161,11 +161,11 @@ services:
       - phpmyadmin
       - pgadmin
     networks:
-      - local
+      - mns
     ports:
       - '80:80'
       - '443:80'
     volumes:
       - './nginx/conf.d:/etc/nginx/conf.d'
 networks:
-  local: null
+  mns: null

@@ -3,10 +3,8 @@ services:
   ipfs:
     container_name: ipfs
     image: ipfs/go-ipfs
-    depends_on:
-      - nginx
     networks:
-      - mns
+      - local
     ports:
       - '5001'
     volumes:
@@ -16,7 +14,7 @@ services:
     image: postgres
     restart: always
     networks:
-      - mns
+      - local
     ports:
       - 5432
     volumes:
@@ -39,12 +37,12 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
     restart: always
     networks:
-      - mns
+      - local
   graph_node:
     container_name: graph_node
     image: 'graphprotocol/graph-node:latest'
     networks:
-      - mns
+      - local
     ports:
       - '9000'
       - '9001'
@@ -54,7 +52,6 @@ services:
     depends_on:
       - ipfs
       - postgres
-      - nginx
     extra_hosts:
       - '172.21.0.1:host-gateway'
     environment:
@@ -74,22 +71,18 @@ services:
     ports:
         - 16543:80
     networks:
-      - mns 
-    depends_on:
-      - nginx
+      - local 
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
   metadata:
     container_name: metadata
-    build: https://github.com/monad-ns/mns-metadata-service.git
+    build: https://github.com/monad-ns/local-metadata-service.git
     ports:
       - '8080:8080'
     networks:
-      - mns
+      - local
     restart: always
-    depends_on:
-      - nginx
     environment:
       NODE_PROVIDER_URL: ${NODE_PROVIDER_URL}
       GRAPH_API_URL: ${GRAPH_API_URL}
@@ -110,19 +103,17 @@ services:
       WORDPRESS_CONFIG_EXTRA: "${WORDPRESS_CONFIG_EXTRA}"
     depends_on:
       - mysql
-      - phpmyadmin
-      - nginx
+      - phpmyadmin 
     restart: always
     ports:
       - 8081:80
     networks:
-      - mns
+      - local
   phpmyadmin:
     container_name: phpmyadmin
     image: phpmyadmin/phpmyadmin:latest
     depends_on:
-      - mysql
-      - nginx
+      - mysql 
     restart: always
     ports:
       - 8180:80
@@ -130,18 +121,16 @@ services:
       PMA_HOST: ${PMA_HOST}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     networks:
-      - mns
+      - local
   app:
     container_name: app
     ports:
       - '3000:80'
     networks:
-      - mns
+      - local
     restart: always
-    depends_on:
-      - nginx
     build: 
-      context: https://github.com/monad-ns/mns-app.git
+      context: https://github.com/monad-ns/local-app.git
       args:
         VITE_APP_PROJECT_ID: ${VITE_APP_PROJECT_ID}
         VITE_APP_ALCHEMY_KEY: ${VITE_APP_ALCHEMY_KEY}
@@ -164,12 +153,19 @@ services:
     container_name: nginx
     image: 'nginx:latest'
     restart: always
+    depends_on:
+      - graph_node
+      - wordpress
+      - app
+      - metadata
+      - phpmyadmin
+      - pgadmin
     networks:
-      - mns
+      - local
     ports:
       - '80:80'
       - '443:80'
     volumes:
       - './nginx/conf.d:/etc/nginx/conf.d'
 networks:
-  mns: null
+  local: null

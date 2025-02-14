@@ -27,6 +27,7 @@ services:
     depends_on:
       - ipfs
       - postgres
+      - nginx
     extra_hosts:
       - '172.21.0.1:host-gateway'
     environment:
@@ -43,6 +44,8 @@ services:
   ipfs:
     container_name: ipfs
     image: ipfs/go-ipfs
+    depends_on:
+      - nginx
     networks:
       - mns
     ports:
@@ -72,6 +75,8 @@ services:
         - 16543:80
     networks:
       - mns 
+    depends_on:
+      - nginx
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
@@ -83,6 +88,8 @@ services:
     networks:
       - mns
     restart: always
+    depends_on:
+      - nginx
     environment:
       NODE_PROVIDER_URL: ${NODE_PROVIDER_URL}
       GRAPH_API_URL: ${GRAPH_API_URL}
@@ -104,6 +111,7 @@ services:
     depends_on:
       - mysql
       - phpmyadmin
+      - nginx
     restart: always
     ports:
       - 8081:80
@@ -114,6 +122,7 @@ services:
     image: phpmyadmin/phpmyadmin:latest
     depends_on:
       - mysql
+      - nginx
     restart: always
     ports:
       - 8180:80
@@ -129,6 +138,8 @@ services:
     networks:
       - mns
     restart: always
+    depends_on:
+      - nginx
     build: 
       context: https://github.com/monad-ns/mns-app.git
       args:

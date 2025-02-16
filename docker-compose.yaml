@@ -129,7 +129,6 @@ services:
     depends_on:
       - graph_node
       - wordpress
-      - app
       - metadata
       - phpmyadmin
       - pgadmin
